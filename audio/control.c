@@ -792,8 +792,10 @@ static void avctp_confirm_cb(GIOChannel *chan, gpointer data)
 	control = dev->control;
 
 	if (control->io) {
-		error("Refusing unexpected connect from %s", address);
-		goto drop;
+		/* We already have a control connection, and the device is trying to open
+		 * a new one.  Refuse it and keep the existing one. */
+		g_io_channel_shutdown(chan, TRUE, NULL);
+		return;
 	}
 
 	avctp_set_state(control, AVCTP_STATE_CONNECTING);
